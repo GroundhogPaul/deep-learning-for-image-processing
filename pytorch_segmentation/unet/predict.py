@@ -5,7 +5,7 @@ import torch
 from torchvision import transforms
 import numpy as np
 from PIL import Image
-
+import matplotlib.pyplot as plt
 from src import UNet
 
 
@@ -19,9 +19,11 @@ def main():
     weights_path = "./save_weights/best_model.pth"
     img_path = "./DRIVE/test/images/01_test.tif"
     roi_mask_path = "./DRIVE/test/mask/01_test_mask.gif"
+    std_img_path = "./DRIVE/test/1st_manual/01_manual1.gif"
     assert os.path.exists(weights_path), f"weights {weights_path} not found."
     assert os.path.exists(img_path), f"image {img_path} not found."
     assert os.path.exists(roi_mask_path), f"image {roi_mask_path} not found."
+    assert os.path.exists(std_img_path), f"image {std_img_path} not found."
 
     mean = (0.709, 0.381, 0.224)
     std = (0.127, 0.079, 0.043)
@@ -40,6 +42,10 @@ def main():
     # load roi mask
     roi_img = Image.open(roi_mask_path).convert('L')
     roi_img = np.array(roi_img)
+
+    # load std mask
+    std_img = Image.open(std_img_path).convert('L')
+    std_img = np.array(std_img)
 
     # load image
     original_img = Image.open(img_path).convert('RGB')
@@ -70,7 +76,14 @@ def main():
         # 将不敢兴趣的区域像素设置成0(黑色)
         prediction[roi_img == 0] = 0
         mask = Image.fromarray(prediction)
-        mask.save("test_result.png")
+        ax = plt.subplot(121)
+        ax.imshow(std_img)
+        ax.set_title("std")
+        ax = plt.subplot(122)
+        ax.imshow(mask)
+        ax.set_title("prediction")
+        plt.show()
+        # mask.save("test_result.png")
 
 
 if __name__ == '__main__':
